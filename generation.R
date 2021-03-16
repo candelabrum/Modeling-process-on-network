@@ -12,10 +12,11 @@ update_influenced <- function(g, old_infl)
         sum = 0;
         adj_v <- adjacent_vertices(g, i)
         adj_vector <- adj_v[[1]]
-        for (v in adj_vector)
-        {
-            sum  = sum + old_infl[v]
-        }
+        #for (v in adj_vector)
+        #{
+        #    sum  = sum + old_infl[v]
+        #}
+        sum = old_infl[i]
         tmp <- inf_distr[100*degree_distribution(g)[i] + 1] + sum
         inf_distr[100*degree_distribution(g)[i] + 1] <- tmp
     }
@@ -34,7 +35,7 @@ set.seed(42)
 g.er <- erdos.renyi.game(100, 0.10)
 
 X11();
-influenced <- rbinom(100, 1, 0.5);
+influenced <- rbinom(100, 1, 0.20);
 g.er$influenced <- influenced
 g.er.colors <- as.character(length(influenced));
 g.er.colors[influenced == 1] <- "green";
