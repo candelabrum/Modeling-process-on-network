@@ -2,14 +2,14 @@ library(sand)
 
 get_cost_seq <- function(k)
 {
-    if (k < 20 && k > 50)
+    if (k < 20 || k > 50)
         return (1);
     return (10);
 } 
 
 change_state <- function(A_k_m, degree, cost_seq_vert, state)
 {
-    if (state == 1)
+    if (state == 0)
         return (cost_seq_vert <= A_k_m)
 
     return (rbinom(1, 1, 0.3));
@@ -94,7 +94,7 @@ main <- function()
     proba <- vector()
     g.er <- erdos.renyi.game(100, 0.10)
 
-    influenced <- rbinom(100, 1, 0.20);
+    influenced <- rbinom(100, 1, 0.05);
     g.er$influenced <- influenced
 
     theta <- vector() 
