@@ -2,7 +2,7 @@ library(sand)
 
 get_cost_seq <- function(k)
 {
-    if (k < 200 && k > 500)
+    if (k < 20 && k > 50)
         return (1);
     return (10);
 } 
@@ -57,11 +57,16 @@ get_infected_link_prob <- function(g)
     P_d <- get_P_d(g);
     ro_k <- get_ro_k(g);
 
-    for(d in 1:max(length(P_d), length(ro_k)))
+    for(d in 1:min(length(P_d), length(ro_k)))
     {
         res = res +  d*P_d[d]*ro_k[d];
         denominator = denominator + d*P_d[d];
     }
+    #print("P_d\n")
+    #print(P_d)
+    #print("Denominator\n")
+    #print(denominator)
+    #print(res)
 
     return (res/denominator)
 }
@@ -90,10 +95,9 @@ main <- function()
     influenced <- rbinom(100, 1, 0.20);
     g.er$influenced <- influenced
 
-    theta <- seq(0, 1000);
-    
+    theta <- vector() 
     X11()
-    for(k in 1:10)
+    for(k in 1:100)
     {
         g.er <- update_states(g.er, k)
 
@@ -101,14 +105,15 @@ main <- function()
         g.er.colors[g.er$influenced == 1] <- "green";
         g.er.colors[g.er$influenced == 0] <- "deepskyblue";
         influenced <- update_influenced(g.er, influenced)
-        plot(g.er, layout=layout.fruchterman.reingold,
-                    vertex.color=g.er.colors)
-        print(g.er$influenced)
+        #plot(g.er, layout=layout.fruchterman.reingold,
+        #            vertex.color=g.er.colors)
+        #print(g.er$influenced)
             
 
         theta[k] <- get_infected_link_prob(g.er);
-        Sys.sleep(1);
+        #Sys.sleep(1);
     }
+    print(theta)
     plot(theta)
 #write update influenced and recalculate smth properties of graph
 }
@@ -132,12 +137,12 @@ update_influenced <- function(g, old_infl)
          
     }
     max_degree <- length(degree_distribution(g))
-    print(inf_distr)
+    #print(inf_distr)
     res = c(1:100);
     for(i in 1:max_degree)
     {
-        print("Degree")
-        print(degree_distribution(g)[i])
+        #print("Degree")
+        #print(degree_distribution(g)[i])
         res[i] = 0;
         if (degree_distribution(g)[i] != 0)
             res[i] = inf_distr[i]/(100*degree_distribution(g)[i])
