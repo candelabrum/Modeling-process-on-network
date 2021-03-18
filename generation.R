@@ -12,7 +12,7 @@ change_state <- function(A_k_m, degree, cost_seq_vert, state)
     if (state == 1)
         return (cost_seq_vert <= A_k_m)
 
-    return rbinom(1, 1, 0.3);
+    return (rbinom(1, 1, 0.3));
 }
 
 get_A_k_m <- function(adj_vector, old_infl)
@@ -26,17 +26,57 @@ get_A_k_m <- function(adj_vector, old_infl)
     return (sum);
 }
 
+get_P_d <- function(g)
+{
+    return (degree_distribution(g))
+}
+
+get_ro_k <- function(g)
+{
+    res <- seq(0, length(get_P_d(g)));
+    for (i in 1:100)
+    {
+        if (g$influenced[i] == 1)
+            res[i] =  res[i] + 1;
+    }
+    degr_distr <- 100*get_P_d(g);
+    for (i in 1:length(degr_distr))
+    {
+        if (degr_distr[i] != 0)
+            res[i] = res[i]/degr_distr[i];
+    }
+
+    return (res);
+}
+
+get_infected_link_prob <- function(g)
+{
+    res = 0;
+    denominator = 0;
+
+    P_d <- get_P_d(g);
+    ro_k <- get_ro_k(g);
+
+    for(d in 1:max(length(P_d), length(ro_k)))
+    {
+        res = res +  d*P_d[d]*ro_k[d];
+        denominator = denominator + d*P_d[d];
+    }
+
+    return (res/denominator)
+}
+
 update_states <- function(g, k)
 {
-    cost_seq <- runif(100, 0, get_cost(k));
+    cost_seq <- runif(100, 0, get_cost_seq(k));
     for (i in 1:100)
     {
         adj_v <- adjacent_vertices(g, i)
         adj_vector <- adj_v[[1]]
-        A_k_m <- get_A_k_m(adj_vector,  V(g)$infected)
+        A_k_m <- get_A_k_m(adj_vector,  g$influenced)
         state <- change_state(A_k_m, degree(g)[i], cost_seq[i], 
-                                        V(g)$infected[i]);
-        V(g)$infected[i] <- state;
+                                        g$influenced[i]);
+        g$influenced[i] <- state;
     }
 
     return (g)
@@ -46,22 +86,30 @@ main <- function()
 {
     set.seed(42)
     g.er <- erdos.renyi.game(100, 0.10)
-    
-    for (k in 1:1000)
-        g <- update_states(g, k)
 
-    X11();
     influenced <- rbinom(100, 1, 0.20);
     g.er$influenced <- influenced
-    g.er.colors <- as.character(length(influenced));
-    g.er.colors[influenced == 1] <- "green";
-    g.er.colors[influenced == 0] <- "deepskyblue";
-    influenced <- update_influenced(g.er, influenced)
-    plot(g.er, layout=layout.fruchterman.reingold,vertex.color=g.er.colors)
-    print(influenced)
 
-    Sys.sleep(100);
+    theta <- seq(0, 1000);
+    
+    X11()
+    for(k in 1:10)
+    {
+        g.er <- update_states(g.er, k)
 
+        g.er.colors <- as.character(length(influenced));
+        g.er.colors[g.er$influenced == 1] <- "green";
+        g.er.colors[g.er$influenced == 0] <- "deepskyblue";
+        influenced <- update_influenced(g.er, influenced)
+        plot(g.er, layout=layout.fruchterman.reingold,
+                    vertex.color=g.er.colors)
+        print(g.er$influenced)
+            
+
+        theta[k] <- get_infected_link_prob(g.er);
+        Sys.sleep(1);
+    }
+    plot(theta)
 #write update influenced and recalculate smth properties of graph
 }
 
@@ -98,4 +146,5 @@ update_influenced <- function(g, old_infl)
     return (res)
 }
 
-
+main();
+Sys.sleep(100);
