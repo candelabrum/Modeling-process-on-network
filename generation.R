@@ -33,11 +33,12 @@ get_P_d <- function(g)
 
 get_ro_k <- function(g)
 {
-    res <- seq(0, length(get_P_d(g)));
+    degrees <- degree(g);
+    res <- rep(0, 100);
     for (i in 1:100)
     {
         if (g$influenced[i] == 1)
-            res[i] =  res[i] + 1;
+            res[degrees[i] + 1] =  res[degrees[i] + 1] + 1;
     }
     degr_distr <- 100*get_P_d(g);
     for (i in 1:length(degr_distr))
@@ -90,6 +91,7 @@ update_states <- function(g, k)
 main <- function()
 {
     set.seed(42)
+    proba <- vector()
     g.er <- erdos.renyi.game(100, 0.10)
 
     influenced <- rbinom(100, 1, 0.20);
@@ -99,22 +101,27 @@ main <- function()
     X11()
     for(k in 1:100)
     {
+        print(k);
         g.er <- update_states(g.er, k)
 
         g.er.colors <- as.character(length(influenced));
         g.er.colors[g.er$influenced == 1] <- "green";
         g.er.colors[g.er$influenced == 0] <- "deepskyblue";
         influenced <- update_influenced(g.er, influenced)
+        print("influenced")
+        proba[k] <- sum(g.er$influenced)/100;
         #plot(g.er, layout=layout.fruchterman.reingold,
         #            vertex.color=g.er.colors)
         #print(g.er$influenced)
             
 
         theta[k] <- get_infected_link_prob(g.er);
-        #Sys.sleep(1);
+        #Sys.sleep(5);
     }
     print(theta)
+    par(mfrow = (c(2, 1)))
     plot(theta)
+    plot(proba)
 #write update influenced and recalculate smth properties of graph
 }
 
