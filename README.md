@@ -14,4 +14,5 @@ p_10 = 0.3 - probability that a product fails
 Let infected link probability - probability that at time k a uniformly
 sampled link in the network points to an infected node.
 
-
+to see results, just:
+make
